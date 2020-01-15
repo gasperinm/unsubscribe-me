@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>UnsubscribeMe</title>
+  <meta charset='utf-8' />
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+
+  <style>
+    #loader {
+      border: 16px solid #f3f3f3;
+      border-radius: 50%;
+      border-top: 16px solid #3498db;
+      width: 120px;
+      height: 120px;
+      -webkit-animation: spin 2s linear infinite;
+      /* Safari */
+      animation: spin 2s linear infinite;
+    }
+
+    /* Safari */
+    @-webkit-keyframes spin {
+      0% {
+        -webkit-transform: rotate(0deg);
+      }
+
+      100% {
+        -webkit-transform: rotate(360deg);
+      }
+    }
+
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <nav class="navbar navbar-inverse">
+    <div class="container-fluid">
+      <div class="navbar-header">
+        <a class="navbar-brand" href="#">UnsubscribeMe</a>
+      </div>
+      <ul class="nav navbar-nav">
+        <li><a id="home-nav-item" class="nav-item nav-link" href="#" style="display: none;">Home</a></li>
+        <li><a id="unsubscribe-nav-item" class="nav-item nav-link" href="#" style="display: none;">Unsubscribe</a></li>
+        <li><a id="resubscribe-nav-item" class="nav-item nav-link" href="#" style="display: none;">Resubscribe</a></li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li><a id="authorize-nav-item" href="#" style="display: none;"><span class="glyphicon glyphicon-user"></span>
+            Authorize</a></li>
+        <li>
+          <a id="user-name" class="nav-item"></a>
+        </li>
+        <li>
+          <a id="signout-nav-item" href="#" style="display: none;">
+            <span class="glyphicon glyphicon-log-in"></span> Sign out
+          </a>
+        </li>
+      </ul>
+    </div>
+  </nav>
+
+  <div id="loader"></div>
+
+  <div id="welcome-content" style="display: none;">
+    <h1>Welcome</h1>
+    <p>
+      One day I decided that I am subscribed to too many Youtube channels.
+      When I started going through my subscription list I quickly noticed the process is very time consuming because a
+      user has to click each individual unsubscribe button.
+      That's when I decided to look for a solution which would allow me to unsubscribe from multiple Youtube channels at
+      once.
+      I found a <a
+        href="https://stackoverflow.com/questions/48874382/how-to-unsubscribe-from-all-the-youtube-channels-at-once/48874466"
+        target="_blank">forum post</a>
+      and some articles (<a href="https://www.saintlad.com/mass-unsubscribe-youtube-channels-at-once/"
+        target="_blank">here</a> is one of them)
+      where a solution is presented,
+      but it involves copying code into the browser's console and I thougth about making it easier for the average user.
+      I then decided to look into the <a href="https://developers.google.com/youtube/v3">Youtube Data API</a> and
+      quickly found out this wouldn't be that hard to do. So here's
+      the finished product. Special thanks to
+      <a href="http://dorodnic.com/blog/2018/03/24/getting-started-with-youtube-javascript-api/"
+        target="_blank">this</a> blog post.
+    </p>
+    <p>
+      You can look through the code and/or make any other suggestions/requests <a href="" target="_blank">here</a>.
+    </p>
+  </div>
+
+  <div id="authorized-content" style="display: none;">
+    <h3>Usage</h3>
+    <p>
+      Chose one of the two buttons above according to what you want to achieve. If you want to manage your subscription
+      list click the Unsubscribe button. If you already did that and want to resubscribe to some of the channels via
+      the backup file you downloaded click the Resubscribe button.
+    </p>
+  </div>
+
+  <div id="unsubscribe-content" style="display: none;">
+    <h3>Unsubscribe</h3>
+    <p>
+      Below is your subscription list. You can scroll through it and check/uncheck the checkbox before each item.
+      Eventually you'll make it to the <a href="#unsubscribe-bottom">bottom</a> of the page where you can read further
+      instructions.
+    </p>
+    <hr />
+    <div id="unsubscriptions" class="container"></div>
+    <hr />
+    <div id="unsubscribe-bottom">
+      <p>
+        If you want you can save a file of all your subscriptions by clicking the Backup button. The file can be used to
+        resubscribe to the channels if you change your mind.
+      </p>
+
+      <p>
+        When you're ready you can click the Unsubscribe button and you'll be unsubscribed from all the selected
+        channels.
+        Make sure you have your backup saved before you click this button if you change your mind later!
+      </p>
+
+      <button id="backup-button">Backup</button>
+      <button id="unsubscribe-button">Unsubscribe</button>
+      <button onclick="allChecks()">Check/uncheck</button>
+      <a id="downloadAnchorElem" style="display:none"></a>
+
+      <br />
+      <br />
+
+      <a href="#top">Back to top</a>
+    </div>
+  </div>
+
+  <div id="resubscribe-content" style="display: none;">
+    <h3>Resubscribe</h3>
+    <p>
+      Choose the backup file you downloaded before unsubscribing. Go through the list and check/uncheck the chekbox
+      before the ones you want to resubscribe to. When you're satisfied click the Resubscribe button at the
+      <a id="#resubscribe-bottom">bottom</a> of the page.
+    </p>
+
+    <label for="file-input">Choose backup file:</label>
+    <br />
+    <input id="file-input" type="file" />
+    <br />
+    <br />
+    <button id="upload-button">Upload</button>
+    <hr />
+    <div id="resubscriptions" class="container"></div>
+    <hr />
+    <div id="resubscribe-botom">
+      <button id="resubscribe-button">Resubscribe</button>
+
+      <br />
+      <br />
+
+      <a href="#top">Back to top</a>
+    </div>
+  </div>
+
+  <br />
+  <br />
+
+  <div id="donation-content" style="display: none;">
+    <p>
+      <b>If you like what I made or find it useful, you can consider <a href="https://paypal.me/matevzg?locale.x=en_US"
+          target="_blank">donating</a>. Thank you!</b>
+    </p>
+  </div>
+
+  <script src="main.js"></script>
+  <script async defer src="https://apis.google.com/js/api.js" onload="this.onload=function(){};handleClientLoad()"
+    onreadystatechange="if (this.readyState === 'complete') this.onload()">
+    </script>
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+    integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+    crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
+    integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
+    crossorigin="anonymous"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+    integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+    crossorigin="anonymous"></script>
+</body>
+
+</html>
